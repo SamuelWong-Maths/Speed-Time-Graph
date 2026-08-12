@@ -1,0 +1,68 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    body { font-family: system-ui, sans-serif; background: #f7fafc; }
+    .card { background: #fff; border: 1px solid #dbe3ee; border-radius: 18px; }
+    .walker { width: 62px; height: 92px; position: absolute; bottom: 94px; transform: translateX(-31px); z-index: 3; }
+    .head { width: 18px; height: 18px; border: 4px solid #172033; border-radius: 50%; position: absolute; left: 22px; }
+    .body { position: absolute; left: 30px; top: 25px; height: 35px; border-left: 5px solid #172033; }
+    .arm { position: absolute; left: 30px; top: 31px; width: 29px; border-top: 4px solid #172033; transform-origin: left; }
+    .a1 { transform: rotate(28deg); }.a2 { transform: rotate(152deg); }
+    .leg { position: absolute; left: 30px; top: 59px; width: 34px; border-top: 5px solid #172033; transform-origin: left; }
+    .l1 { transform: rotate(55deg); }.l2 { transform: rotate(125deg); }
+    .walk .a1 { animation: a1 var(--pace) infinite alternate ease-in-out; }.walk .a2 { animation: a2 var(--pace) infinite alternate ease-in-out; }
+    .walk .l1 { animation: l1 var(--pace) infinite alternate ease-in-out; }.walk .l2 { animation: l2 var(--pace) infinite alternate ease-in-out; }
+    @keyframes a1 { to { transform: rotate(-28deg); } } @keyframes a2 { to { transform: rotate(208deg); } }
+    @keyframes l1 { to { transform: rotate(125deg); } } @keyframes l2 { to { transform: rotate(55deg); } }
+    .axis { position: absolute; bottom: 84px; left: 40px; right: 40px; height: 4px; background: #334155; }
+    .axis::after { content: ''; position: absolute; top: 50%; right: -12px; transform: translateY(-50%); border-top: 8px solid transparent; border-bottom: 8px solid transparent; border-left: 14px solid #334155; }
+    .colourTrack { position: absolute; bottom: 84px; left: 40px; right: 40px; height: 4px; display: flex; overflow: hidden; }
+    .mark { position: absolute; bottom: 8px; height: 92px; transform: translateX(-50%); }
+    .mark i { display: block; width: 3px; height: 16px; background: #334155; margin: auto; }
+    .mark span { display: block; position: absolute; top: 28px; left: 50%; transform: translateX(-50%); white-space: nowrap; font-size: 16px; font-weight: 700; color: #334155; }
+  </style>
+</head>
+<body class="text-slate-800">
+  <main class="max-w-6xl mx-auto p-5">
+    <div class="grid lg:grid-cols-2 gap-5">
+      <section class="card p-5">
+        <div class="flex justify-between gap-2"><div><h2 class="text-xl font-bold">1. Speed-Time Graph</h2><p class="text-sm text-slate-600">A dot is plotted at each one-second reading.</p></div><span id="phase" class="text-sm font-semibold bg-slate-100 px-3 py-1 rounded-full h-fit">Ready</span></div>
+        <svg viewBox="0 0 680 375" class="w-full mt-2" role="img" aria-label="Speed-Time Graph for a runner"><g id="grid"></g><path d="M55 320V25M55 320H650" stroke="#172033" stroke-width="3"/><g id="fills"></g><g id="lines"></g><g id="dots"></g><g id="labels" fill="#334155" font-size="12" font-weight="600"></g><text x="330" y="370" fill="#334155" font-size="16" font-weight="600">Time (s)</text><text x="-205" y="18" transform="rotate(-90)" fill="#334155" font-size="16" font-weight="600">Speed (m/s)</text></svg>
+      </section>
+      <section class="card p-5 flex flex-col items-center">
+        <h2 class="text-xl font-bold self-start">2. Speedometer</h2><p class="text-sm text-slate-600 self-start mb-3">The dial is read once every second.</p>
+        <svg viewBox="0 0 240 240" class="w-[220px] h-[220px]" role="img" aria-label="Speedometer from 0 to 10 metres per second"><circle cx="120" cy="120" r="105" fill="white" stroke="#172033" stroke-width="9"/><g id="dialTicks"></g><g id="dialLabels" fill="#172033" font-size="15" font-weight="800"></g><line id="needle" x1="120" y1="120" x2="120" y2="42" stroke="#e11d48" stroke-width="5" stroke-linecap="round" transform="rotate(-120 120 120)"/><circle cx="120" cy="120" r="13" fill="#172033"/><text id="speed" x="120" y="196" text-anchor="middle" font-size="29" font-weight="800" fill="#172033">0.0</text><text x="164" y="196" text-anchor="middle" font-size="13" font-weight="700" fill="#172033">m/s</text></svg>
+        <div class="mt-2 text-center"><span class="text-slate-500 text-sm">Time</span><div><span id="time" class="font-bold text-3xl">0.0</span> <span class="text-slate-500">seconds</span></div></div>
+      </section>
+    </div>
+    <section class="card p-5 mt-5">
+      <div class="flex flex-wrap justify-between gap-3 items-start"><div><h2 class="text-xl font-bold">3. The runner and total distance</h2><p id="walkText" class="text-sm text-slate-600">Press start to begin the 12-second run.</p></div><button id="startButton" class="px-5 py-2 rounded-xl bg-blue-600 disabled:bg-slate-400 text-white font-bold">Start animation</button></div>
+      <div id="track" class="relative h-60 mt-3"><div class="axis"></div><div id="colourTrack" class="colourTrack"></div><div id="numberLine" class="absolute inset-x-10 bottom-0 h-28"></div><div id="walker" class="walker"><div class="head"></div><div class="body"></div><div class="arm a1"></div><div class="arm a2"></div><div class="leg l1"></div><div class="leg l2"></div></div></div>
+      <div class="mt-3 p-4 rounded-xl bg-slate-100 border border-slate-200"><div class="text-sm text-slate-500">Total Distance</div><div id="calc" class="font-bold text-base sm:text-lg leading-8">Press start to reveal the area calculation.</div></div>
+    </section>
+  </main>
+  <script>
+    const $ = id => document.getElementById(id), N = 'http://www.w3.org/2000/svg';
+    const X = 55, Y = 320, W = 595, H = 295, MAX = 10, TOTAL = 70;
+    const el = (name, a = {}) => { const e = document.createElementNS(N, name); for (const k in a) e.setAttribute(k, a[k]); return e; };
+    const polar = (a, r) => [120 + Math.sin(a * Math.PI / 180) * r, 120 - Math.cos(a * Math.PI / 180) * r];
+    for (let i = 0; i <= 10; i++) { const a = -120 + i * 24, [x1,y1] = polar(a,99), [x2,y2] = polar(a,i%5?85:79); $('dialTicks').append(el('line',{x1,y1,x2,y2,stroke:'#172033','stroke-width':i%5?3:5})); if ([0,5,10].includes(i)) { const [x,y] = polar(a,73), z = el('text',{x,y:y+5,'text-anchor':'middle'}); z.textContent=i; $('dialLabels').append(z); } }
+    for (let t=0;t<=12;t++) { const x=X+t*W/12; $('grid').append(el('path',{d:`M${x} 25V320`,stroke:'#d8e1ed'})); const z=el('text',{x,y:340,'text-anchor':'middle'}); z.textContent=t; $('labels').append(z); }
+    for (let v=0;v<=10;v++) { const y=Y-v*H/MAX; $('grid').append(el('path',{d:`M55 ${y}H650`,stroke:'#d8e1ed'})); const z=el('text',{x:43,y:y+4,'text-anchor':'end'}); z.textContent=v; $('labels').append(z); }
+    for (let d=0;d<=70;d+=5) { const m=document.createElement('div'); m.className='mark'; m.style.left=d/TOTAL*100+'%'; const tick=document.createElement('i'), label=document.createElement('span'); label.textContent=d+' m'; m.append(tick,label); $('numberLine').append(m); }
+    const speed=t=>t<=4?2*t:t<=9?8:Math.max(0,8-(t-9)*8/3), distance=t=>t<=4?t*t:t<=9?8*t-16:68-4/3*(12-t)**2, point=t=>[X+t*W/12,Y-speed(t)*H/MAX];
+    const parts=[{a:0,b:4,from:0,to:16,c:'#2563eb',name:'Speeding up'},{a:4,b:9,from:16,to:56,c:'#d97706',name:'Running steadily'},{a:9,b:12,from:56,to:68,c:'#059669',name:'Slowing down'}];
+    let run=false, raf, start, last=-1;
+    function drawGraph(t) { $('lines').replaceChildren(); $('fills').replaceChildren(); parts.forEach(p=>{const end=Math.min(t,p.b); if(end<=p.a)return; const A=point(p.a),B=point(end); $('fills').append(el('path',{d:`M${A[0]} ${Y}L${A[0]} ${A[1]}L${B[0]} ${B[1]}L${B[0]} ${Y}Z`,fill:p.c,opacity:.18})); $('lines').append(el('path',{d:`M${A[0]} ${A[1]}L${B[0]} ${B[1]}`,fill:'none',stroke:p.c,'stroke-width':5,'stroke-linecap':'round'}));}); }
+    function drawDistance(d) { $('colourTrack').replaceChildren(); parts.forEach(p=>{const covered=Math.max(0,Math.min(d,p.to)-p.from);if(!covered)return;const s=document.createElement('div');s.style.cssText=`background:${p.c};width:${covered/TOTAL*100}%;height:100%`;$('colourTrack').append(s);}); }
+    function show(t) { const v=speed(t),d=distance(t),p=parts.find(q=>t>=q.a&&t<=q.b)||parts[2]; $('speed').textContent=v.toFixed(1); $('time').textContent=t.toFixed(1); $('needle').setAttribute('transform',`rotate(${-120+v*24} 120 120)`); const track=$('track').getBoundingClientRect(),line=$('numberLine').getBoundingClientRect(); $('walker').style.left=line.left-track.left+line.width*d/TOTAL+'px'; $('walker').style.setProperty('--pace',Math.max(.25,1.45-.125*v).toFixed(2)+'s'); $('walker').classList.toggle('walk',v>.05); $('phase').textContent=t===0?'Ready':t===12?'Run complete':p.name; $('phase').style.color=p.c; $('phase').style.background=p.c+'20'; drawGraph(t);drawDistance(d); }
+    function calculation(done) { const b=$('calc');b.replaceChildren();if(!done){b.textContent='Calculating...';return;} [['½ × 4 × 8','#2563eb'],[' + ','#334155'],['5 × 8','#d97706'],[' + ','#334155'],['½ × 3 × 8','#059669'],[' = ','#334155'],['16','#2563eb'],[' + ','#334155'],['40','#d97706'],[' + ','#334155'],['12','#059669'],[' = 68 m','#334155']].forEach(([x,c])=>{const s=document.createElement('span');s.textContent=x;s.style.color=c;b.append(s);}); }
+    function frame(now) { const t=Math.min(12,(now-start)/1000);show(t);const second=Math.floor(t);if(second>last){last=second;const [cx,cy]=point(second),p=parts.find(q=>second>=q.a&&second<=q.b)||parts[2];$('dots').append(el('circle',{cx,cy,r:5,fill:p.c,stroke:'#fff','stroke-width':2}));}if(t<12)raf=requestAnimationFrame(frame);else{run=false;$('startButton').disabled=false;$('startButton').textContent='Replay animation';$('walkText').textContent='The runner has travelled 68 m in total.';calculation(true);}}
+    $('startButton').onclick=()=>{if(run)return;cancelAnimationFrame(raf);$('dots').replaceChildren();$('lines').replaceChildren();$('fills').replaceChildren();$('colourTrack').replaceChildren();last=-1;run=true;$('startButton').disabled=true;$('startButton').textContent='Running…';$('walkText').textContent='';calculation(false);start=performance.now();raf=requestAnimationFrame(frame);};
+    show(0);
+  </script>
+</body>
+</html>
